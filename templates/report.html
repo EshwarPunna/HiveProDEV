@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TawasolPay — Cyber Risk Briefing</title>
+<style>
+  :root {
+    --bg: #0b0f14; --panel: #131a22; --panel2: #1a232e; --border: #263241;
+    --text: #dbe4ee; --muted: #8ea0b3; --accent: #ef4b4b; --accent2: #f0a742;
+    --good: #4bd0a0; --mono: 'SFMono-Regular', Consolas, Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height:1.5; }
+  header { padding: 32px 40px 20px; border-bottom: 1px solid var(--border); }
+  header h1 { margin:0 0 6px; font-size: 22px; font-weight: 650; letter-spacing: -0.01em; }
+  header .sub { color: var(--muted); font-size: 13.5px; }
+  .refresh-link { display:inline-flex; align-items:center; gap:7px; margin-left:12px; color:#7fb2e0; text-decoration:none; font-size:12.5px; border:1px solid var(--border); border-radius:5px; padding:4px 10px; cursor:pointer; transition: background .2s, border-color .2s, color .2s; }
+  .refresh-link:hover { background: var(--panel2); border-color:#42617d; }
+  .refresh-link.is-loading { color:var(--accent2); border-color:#76572d; pointer-events:none; }
+  .refresh-icon { display:inline-block; font-size:15px; line-height:1; }
+  .refresh-link.is-loading .refresh-icon { animation: refresh-spin .85s linear infinite; }
+  @keyframes refresh-spin { to { transform:rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .refresh-link.is-loading .refresh-icon { animation:none; } }
+  main { max-width: 900px; margin: 0 auto; padding: 28px 40px 80px; }
+  .badge { display:inline-block; padding:2px 8px; border-radius: 4px; font-size:11px; font-weight:600; letter-spacing:.03em; text-transform:uppercase; }
+  .badge.mode { background:#20303f; color:#7fb2e0; }
+  .risk { background: var(--panel); border:1px solid var(--border); border-radius:10px; margin-bottom:20px; overflow:hidden; }
+  .risk-head { display:flex; align-items:center; gap:14px; padding:18px 22px; border-bottom:1px solid var(--border); }
+  .rank { font-family: var(--mono); font-size:20px; font-weight:700; color: var(--accent2); min-width: 34px; }
+  .risk-title { flex:1; }
+  .risk-title .name { font-weight:650; font-size:15.5px; }
+  .risk-title .sub { color: var(--muted); font-size:12.5px; margin-top:2px; }
+  .score { text-align:right; font-family: var(--mono); }
+  .score .num { font-size:22px; font-weight:700; }
+  .score .lbl { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+  .risk-body { padding: 18px 22px; }
+  .explanation { font-size: 14.5px; margin-bottom: 16px; }
+  .grid { display:grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+  .field .lbl { font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:3px; }
+  .field .val { font-size:13.5px; }
+  .control-box { background: var(--panel2); border:1px solid var(--border); border-radius:8px; padding:14px 16px; margin-top: 6px;}
+  .control-box .ctl-id { font-family: var(--mono); color: var(--good); font-weight:700; font-size:13px; }
+  .control-box .ctl-title { color: var(--muted); font-size:12.5px; margin-left: 6px;}
+  .control-box p { margin: 8px 0 0; font-size: 13px; }
+  .also-affects { font-size:12px; color:var(--muted); margin-top:2px;}
+  .campaign-tag { display:inline-block; background:#3a1f1f; color:#ff9b9b; border-radius:5px; padding:2px 8px; font-size:11.5px; margin:2px 4px 0 0; }
+  footer { color: var(--muted); font-size:12px; padding: 20px 40px 40px; }
+  a { color: #7fb2e0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>TawasolPay — AI-Powered Cyber Risk Briefing</h1>
+  <div class="sub">
+    Top {{ entries|length }} prioritized risks · generated {{ generated_at }} ·
+    <span class="badge mode">ranking: {{ ranking_mode }}</span>
+    <a class="refresh-link" href="/?n={{ n }}&refresh=true" aria-label="Recompute live report">
+      <span class="refresh-icon" aria-hidden="true">↻</span>
+      <span class="refresh-label">Recompute live</span>
+    </a>
+  </div>
+</header>
+<main>
+  {% for e in entries %}
+  <div class="risk">
+    <div class="risk-head">
+      <div class="rank">#{{ e.rank }}</div>
+      <div class="risk-title">
+        <div class="name">{{ e.vulnerability_name }} — {{ e.asset }}</div>
+        <div class="sub">{{ e.cve }} · CVSS {{ e.cvss }} ({{ e.severity }}) · {{ e.business_service }}</div>
+      </div>
+      <div class="score">
+        <div class="num">{{ e.risk_score }}</div>
+        <div class="lbl">risk score</div>
+      </div>
+    </div>
+    <div class="risk-body">
+      <div class="explanation">{{ e.explanation }}</div>
+
+      {% if e.also_affects %}
+      <div class="also-affects">Also affects: {% for a in e.also_affects %}{{ a.asset_name }}{% if not loop.last %}, {% endif %}{% endfor %}</div>
+      {% endif %}
+
+      {% if e.matched_threat_intel %}
+      <div style="margin-top:10px;">
+        {% for c in e.matched_threat_intel %}
+        <span class="campaign-tag">{{ c.threat_actor }} · {{ c.campaign_name }}{% if c.ransomware_association == 'Yes' %} · ransomware{% endif %}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if e.nist_control_id %}
+      <div class="control-box">
+        <span class="ctl-id">{{ e.nist_control_id }}</span><span class="ctl-title">{{ e.nist_control_title }}</span>
+        <p>{{ e.nist_control_rationale }}</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</main>
+<footer>
+  NIST SP 800-53 Rev 5 guidance retrieved from the official NIST OSCAL catalog. Explanation source per finding: {{ entries[0].explanation_source if entries else "n/a" }}.
+  See <a href="/api/report">/api/report</a> for raw JSON.
+</footer>
+<script>
+  document.querySelector('.refresh-link')?.addEventListener('click', function (event) {
+    event.preventDefault();
+    this.classList.add('is-loading');
+    this.setAttribute('aria-busy', 'true');
+    this.querySelector('.refresh-label').textContent = 'Recomputing...';
+    window.location.assign(`${this.href}&_=${Date.now()}`);
+  });
+</script>
+</body>
+</html>

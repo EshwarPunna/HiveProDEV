@@ -1,0 +1,15 @@
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+exclude = ["data/", ".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]  # line length handled by formatter/line-length setting above
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+disallow_untyped_defs = false  # aspirational, not yet enforced — see README "one thing I'd change"
+warn_unused_ignores = true
+exclude = ["data/", "scripts/tfidf_fallback.py"]
