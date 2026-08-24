@@ -4,10 +4,8 @@ services:
     env: python
     repo: https://github.com/EshwarPunna/HiveProDEV.git
     branch: main
-    buildCommand: "pip install -r requirements.txt && python scripts/build_nist_index.py"
+    buildCommand: "pip install -r requirements-render.txt && python scripts/build_nist_index.py"
     startCommand: "uvicorn app:app --host 0.0.0.0 --port $PORT"
     envVars:
       - key: LLM_PROVIDER
-        value: groq
-      - key: GROQ_API_KEY
-        sync: false
+        value: none
